@@ -176,10 +176,11 @@ compute_sc_flux_optimized <- function(num_cell, fraction, fluxscore, medium,
     envir = environment()
   )
   
-  # 加载必要的包到工作节点
+  # 加载必要的包到工作节点  
   parallel::clusterEvalQ(cl, {
     library(osqp)
     library(Matrix)
+    library(METAFlux2)  # 加载 METAFlux2 以确保 Rcpp 函数可用
   })
   
   # ========== 并行主循环 ==========
@@ -200,15 +201,29 @@ compute_sc_flux_optimized <- function(num_cell, fraction, fluxscore, medium,
     ras <- c(as.vector(unlist(score[, seq_len(num_cell)])), one_vec)
     
     # 构建边界（使用 Rcpp 或 R 版本）
-    if (use_rcpp && exists("construct_flux_boundaries_fast")) {
+    if (use_rcpp) {
       # 使用 C++ 版本（快 10-50x）
-      boundaries <- construct_flux_boundaries_fast(
-        LB_rep, neg_one_vec, one_vec, ras,
-        rev_indices, non_rev_indices,
-        tail_idx, medium_matches, zero_vec_final_s
-      )
-      l <- boundaries$l
-      u <- boundaries$u
+      tryCatch({
+        boundaries <- METAFlux2::construct_flux_boundaries_fast(
+          LB_rep, neg_one_vec, one_vec, ras,
+          rev_indices, non_rev_indices,
+          tail_idx, medium_matches, zero_vec_final_s
+        )
+        l <- boundaries$l
+        u <- boundaries$u
+      }, error = function(e) {
+        # Fallback to R version
+        origlb <- c(LB_rep, neg_one_vec)
+        origlb[rev_indices] <- -ras[rev_indices]
+        origlb[non_rev_indices] <- 0
+        origlb[tail_idx] <- 0
+        origlb[medium_matches] <- -1
+        
+        origub <- ras
+        
+        l <<- c(zero_vec_final_s, origlb)
+        u <<- c(zero_vec_final_s, origub)
+      })
     } else {
       # 使用 R 版本
       origlb <- c(LB_rep, neg_one_vec)
