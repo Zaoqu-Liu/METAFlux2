@@ -4,7 +4,15 @@
 \alias{compute_sc_flux}
 \title{sc-rna seq flux calculation}
 \usage{
-compute_sc_flux(num_cell, fraction, fluxscore, medium)
+compute_sc_flux(
+  num_cell,
+  fraction,
+  fluxscore,
+  medium,
+  use_parallel = TRUE,
+  num_cores = NULL,
+  use_rcpp = TRUE
+)
 }
 \arguments{
 \item{num_cell}{the number of cell types or clusters}
@@ -14,6 +22,12 @@ compute_sc_flux(num_cell, fraction, fluxscore, medium)
 \item{fluxscore}{calculated metabolic activity score(MRAS)}
 
 \item{medium}{Medium profile}
+
+\item{use_parallel}{Logical. Use parallel computing? (default: TRUE, 4-8x faster)}
+
+\item{num_cores}{Integer. Number of CPU cores (default: NULL = auto-detect)}
+
+\item{use_rcpp}{Logical. Use Rcpp optimization? (default: TRUE, 1.1x faster)}
 }
 \value{
 Flux score for single cell data
