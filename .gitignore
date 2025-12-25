@@ -1,6 +1,33 @@
-*.so
+# Compiled Object files
 *.o
-.Rproj.user
+*.so
+*.dll
+*.dylib
+
+# R session data
 .Rhistory
 .RData
 .Ruserdata
+
+# RStudio files
+.Rproj.user/
+*.Rproj.user
+
+# Development files
+*_FIXED.R
+*_backup.R
+*_old.R
+test_*.R
+
+# Documentation temp files
+*.aux
+*.log
+*.out
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*~
